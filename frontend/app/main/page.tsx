@@ -25,16 +25,26 @@ export default function MainPage() {
 
   const handleCreateSociety = async () => {
     if (!societyDescription.trim()) return;
-    
+
     setIsLoading(true);
-    
-    // Simulate API call for now
-    setTimeout(() => {
-      console.log("Creating society:", societyDescription, "with", numberOfPersonas, "personas");
-      setIsLoading(false);
+
+    try {
+      // Import API helpers
+      const { createExperimentFromDescription, saveExperimentToLocalStorage } = await import('@/lib/experiment-helpers');
+
+      // Create experiment via API
+      const experiment = await createExperimentFromDescription(societyDescription, numberOfPersonas);
+
+      // Save to localStorage for next page
+      saveExperimentToLocalStorage(experiment);
+
       // Navigate to simulation page
       window.location.href = "/simulation";
-    }, 2000);
+    } catch (error) {
+      console.error("Error creating experiment:", error);
+      alert("Failed to create experiment. Make sure the backend is running on http://localhost:8000");
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +78,7 @@ export default function MainPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30 flex items-center justify-center px-4 py-8 pb-32 relative overflow-hidden">
         {/* Subtle Background Pattern */}
         <div className="absolute inset-0 overflow-hidden opacity-30">
-          <div 
+          <div
             className="absolute inset-0"
             style={{
               backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none'%3E%3Ccircle fill='%23e5e7eb' opacity='0.4' cx='16' cy='16' r='1.5'%3E%3C/circle%3E%3C/svg%3E")`,
@@ -155,11 +165,10 @@ export default function MainPage() {
                     <button
                       key={number}
                       onClick={() => setNumberOfPersonas(number)}
-                      className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                        numberOfPersonas === number
+                      className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${numberOfPersonas === number
                           ? "bg-black text-white shadow-lg scale-105"
                           : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      }`}
+                        }`}
                     >
                       {number}
                     </button>
