@@ -1,0 +1,4 @@
+# file: /Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py
+# hypothesis_version: 6.148.7
+
+[0.0, 0.05, 0.1, 0.2, 0.7, 100, 'B2B', 'B2C', 'CEO/Founder', 'Early Adopter', 'Enterprise', 'Finance Manager', 'Freelancer', 'IT Director', 'Mainstream User', 'Mid-Market', 'Operations Manager', 'Product Manager', 'SMB', 'Sales Director', 'Senior Executive', 'Small Business Owner', 'Startup', 'Student', 'Technical Lead', 'adoption_patterns', 'base_role', 'business_model', 'company_context', 'description', 'industry', 'is_valid', 'missing_fields', 'name', 'quality_score', 'seed_id', 'suggestions', 'target_market', 'target_user', 'value_proposition']

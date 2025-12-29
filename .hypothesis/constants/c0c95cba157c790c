@@ -1,0 +1,4 @@
+# file: /Users/kartikeya/Documents/PersonaLab/backend/app/services/simulation_engine.py
+# hypothesis_version: 6.148.7
+
+[-0.3, -0.2, -0.1, 0.0, 0.1, 0.15, 0.2, 0.3, 0.5, 0.7, 0.9, 1.0, 500, ',', 'ADOPT', 'API Error', 'CONFIDENCE:', 'Cost', 'DECISION:', 'Feature completeness', 'GOOGLE_API_KEY', 'Integration', 'KEY_FACTORS:', 'Parsing error', 'REASONING:', 'REJECT', 'ROI potential', 'Retry Required', 'Risk assessment', 'Team adoption', 'Time to value', 'UNSURE', 'Unknown factors', 'Vendor reliability', 'budget', 'confidence', 'decision', 'gemini-1.5-flash', 'key_factors', 'reasoning', 'simulation-mode']

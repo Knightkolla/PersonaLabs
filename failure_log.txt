@@ -1,0 +1,227 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.4.1, pluggy-1.6.0
+rootdir: /Users/kartikeya/Documents/PersonaLab/backend
+configfile: pytest.ini
+plugins: asyncio-1.1.0, hypothesis-6.148.7, langsmith-0.4.14, anyio-4.2.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+backend/tests/test_property_experiment_management.py FF                  [100%]
+
+=================================== FAILURES ===================================
+_________ TestPropertyExperimentManagement.test_experiment_persistence _________
+
+self = <tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9d90>
+client = <starlette.testclient.TestClient object at 0x10a8bb9b0>
+
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+>   @given(company_input=company_input_strategy(), feature_description=feature_description_strategy())
+               ^^^^^^^^^^^^^^^
+
+backend/tests/test_property_experiment_management.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9d90>
+client = <starlette.testclient.TestClient object at 0x10a8bb9b0>
+company_input = CompanyInput(name='0', industry='0', business_model=<BusinessModel.B2B: 'B2B'>, target_market='0', company_size=<CompanySize.STARTUP: 'Startup'>, description='')
+feature_description = FeatureDescription(name='0', description='0', target_user='0', value_proposition='0', pricing_model='0', implementation_complexity=<ImplementationComplexity.LOW: 'Low'>, competitor_comparison='')
+
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @given(company_input=company_input_strategy(), feature_description=feature_description_strategy())
+    def test_experiment_persistence(self, client, company_input, feature_description):
+        """Property 27: Experiment persistence capability"""
+        from unittest.mock import patch, AsyncMock
+        from app.models import SyntheticPersona, Demographics, Psychographics, BehaviorPatterns, ContextualFactors, TechnologyAdoption
+    
+        # Create a dummy persona
+        dummy_persona = SyntheticPersona(
+            id=str(uuid.uuid4()),
+            name="Test Persona",
+            demographics=Demographics(age=30, role="Tester", company_size="Small", industry="Tech", income="High"),
+            psychographics=Psychographics(personality_traits=["Test"], values=["Test"], motivations=["Test"], pain_points=["Test"]),
+            behavior_patterns=BehaviorPatterns(technology_adoption=TechnologyAdoption.EARLY_ADOPTER, decision_making_style="Fast", risk_tolerance="High", information_sources=["Test"]),
+            contextual_factors=ContextualFactors(current_solutions=[], budget="High", time_constraints="Low", team_influence="High")
+        )
+    
+        # Patch the engine in the router module
+        with patch("app.routers.experiments.PersonaGenerationEngine") as MockEngine:
+            # Configure the mock instance
+            mock_instance = MockEngine.return_value
+            # Configure the async method
+            mock_instance.generate_personas = AsyncMock(return_value=[dummy_persona])
+    
+            # 1. Create Experiment
+            payload = {
+                "company_input": company_input.model_dump(),
+                "feature_description": feature_description.model_dump()
+            }
+    
+            response = client.post("/api/v1/experiments/", json=payload)
+>           assert response.status_code == 200
+E           assert 500 == 200
+E            +  where 500 = <Response [500 Internal Server Error]>.status_code
+E           Falsifying example: test_experiment_persistence(
+E               self=<tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9d90>,
+E               client=<starlette.testclient.TestClient object at 0x10a8bb9b0>,
+E               company_input=CompanyInput(
+E                   name='0',
+E                   industry='0',
+E                   target_market='0',
+E                   business_model=<BusinessModel.B2B: 'B2B'>,
+E                   company_size=<CompanySize.STARTUP: 'Startup'>,
+E                   description='',
+E               ),
+E               feature_description=FeatureDescription(
+E                   name='0',
+E                   description='0',
+E                   value_proposition='0',
+E                   target_user='0',
+E                   pricing_model='0',
+E                   implementation_complexity=<ImplementationComplexity.LOW: 'Low'>,
+E                   competitor_comparison='',
+E               ),
+E           )
+
+backend/tests/test_property_experiment_management.py:65: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/routers/experiments.py", line 78, in create_experiment
+    company_context = await processor.process_company_input(request.company_input)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 185, in process_company_input
+    validation_result = self.validate_company_input(company_input)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 84, in validate_company_input
+    raise ValidationError(
+app.services.company_processor.ValidationError: Insufficient information for persona generation
+Traceback (most recent call last):
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/routers/experiments.py", line 78, in create_experiment
+    company_context = await processor.process_company_input(request.company_input)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 185, in process_company_input
+    validation_result = self.validate_company_input(company_input)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 84, in validate_company_input
+    raise ValidationError(
+app.services.company_processor.ValidationError: Insufficient information for persona generation
+___________ TestPropertyExperimentManagement.test_experiment_forking ___________
+
+self = <tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9e50>
+client = <starlette.testclient.TestClient object at 0x10a8b8dd0>
+
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+>   @given(company_input=company_input_strategy(),
+              ^^^^^^^^^^^^^^^
+           feature_1=feature_description_strategy(),
+           feature_2=feature_description_strategy())
+
+backend/tests/test_property_experiment_management.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9e50>
+client = <starlette.testclient.TestClient object at 0x10a8b8dd0>
+company_input = CompanyInput(name='0', industry='0', business_model=<BusinessModel.B2B: 'B2B'>, target_market='0', company_size=<CompanySize.STARTUP: 'Startup'>, description='')
+feature_1 = FeatureDescription(name='0', description='0', target_user='0', value_proposition='0', pricing_model='0', implementation_complexity=<ImplementationComplexity.LOW: 'Low'>, competitor_comparison='')
+feature_2 = FeatureDescription(name='0', description='0', target_user='0', value_proposition='0', pricing_model='0', implementation_complexity=<ImplementationComplexity.LOW: 'Low'>, competitor_comparison='')
+
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @given(company_input=company_input_strategy(),
+           feature_1=feature_description_strategy(),
+           feature_2=feature_description_strategy())
+    def test_experiment_forking(self, client, company_input, feature_1, feature_2):
+        """Property 28: Iteration functionality preservation"""
+        from unittest.mock import patch, AsyncMock
+        from app.models import SyntheticPersona, Demographics, Psychographics, BehaviorPatterns, ContextualFactors, TechnologyAdoption
+    
+        # Create a dummy persona
+        dummy_persona = SyntheticPersona(
+            id=str(uuid.uuid4()),
+            name="Test Persona",
+            demographics=Demographics(age=30, role="Tester", company_size="Small", industry="Tech", income="High"),
+            psychographics=Psychographics(personality_traits=["Test"], values=["Test"], motivations=["Test"], pain_points=["Test"]),
+            behavior_patterns=BehaviorPatterns(technology_adoption=TechnologyAdoption.EARLY_ADOPTER, decision_making_style="Fast", risk_tolerance="High", information_sources=["Test"]),
+            contextual_factors=ContextualFactors(current_solutions=[], budget="High", time_constraints="Low", team_influence="High")
+        )
+    
+        with patch("app.routers.experiments.PersonaGenerationEngine") as MockEngine:
+            mock_instance = MockEngine.return_value
+            mock_instance.generate_personas = AsyncMock(return_value=[dummy_persona])
+    
+            # 1. Create initial experiment
+            payload = {
+                "company_input": company_input.model_dump(),
+                "feature_description": feature_1.model_dump()
+            }
+            response = client.post("/api/v1/experiments/", json=payload)
+>           assert response.status_code == 200
+E           assert 500 == 200
+E            +  where 500 = <Response [500 Internal Server Error]>.status_code
+E           Falsifying example: test_experiment_forking(
+E               self=<tests.test_property_experiment_management.TestPropertyExperimentManagement object at 0x10a8b9e50>,
+E               client=<starlette.testclient.TestClient object at 0x10a8b8dd0>,
+E               company_input=CompanyInput(
+E                   name='0',
+E                   industry='0',
+E                   target_market='0',
+E                   business_model=<BusinessModel.B2B: 'B2B'>,
+E                   company_size=<CompanySize.STARTUP: 'Startup'>,
+E                   description='',
+E               ),
+E               feature_1=FeatureDescription(
+E                   name='0',
+E                   description='0',
+E                   value_proposition='0',
+E                   target_user='0',
+E                   pricing_model='0',
+E                   implementation_complexity=<ImplementationComplexity.LOW: 'Low'>,
+E                   competitor_comparison='',
+E               ),
+E               feature_2=FeatureDescription(
+E                   name='0',
+E                   description='0',
+E                   value_proposition='0',
+E                   target_user='0',
+E                   pricing_model='0',
+E                   implementation_complexity=<ImplementationComplexity.LOW: 'Low'>,
+E                   competitor_comparison='',
+E               ),
+E           )
+
+backend/tests/test_property_experiment_management.py:113: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/routers/experiments.py", line 78, in create_experiment
+    company_context = await processor.process_company_input(request.company_input)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 185, in process_company_input
+    validation_result = self.validate_company_input(company_input)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 84, in validate_company_input
+    raise ValidationError(
+app.services.company_processor.ValidationError: Insufficient information for persona generation
+Traceback (most recent call last):
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/routers/experiments.py", line 78, in create_experiment
+    company_context = await processor.process_company_input(request.company_input)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 185, in process_company_input
+    validation_result = self.validate_company_input(company_input)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kartikeya/Documents/PersonaLab/backend/app/services/company_processor.py", line 84, in validate_company_input
+    raise ValidationError(
+app.services.company_processor.ValidationError: Insufficient information for persona generation
+=============================== warnings summary ===============================
+backend/app/database.py:16
+  /Users/kartikeya/Documents/PersonaLab/backend/app/database.py:16: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_property_experiment_management.py::TestPropertyExperimentManagement::test_experiment_persistence
+FAILED backend/tests/test_property_experiment_management.py::TestPropertyExperimentManagement::test_experiment_forking
+======================== 2 failed, 3 warnings in 0.22s =========================

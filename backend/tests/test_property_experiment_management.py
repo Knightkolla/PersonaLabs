@@ -1,6 +1,6 @@
 
 import pytest
-from hypothesis import given, strategies as st, settings
+from hypothesis import given, strategies as st, settings, HealthCheck
 from fastapi.testclient import TestClient
 from app.models import CompanyInput, FeatureDescription, BusinessModel, CompanySize, ImplementationComplexity
 import uuid
@@ -9,29 +9,29 @@ import uuid
 def company_input_strategy():
     return st.builds(
         CompanyInput,
-        name=st.text(min_size=1, max_size=50),
-        industry=st.text(min_size=1, max_size=50),
-        target_market=st.text(min_size=1, max_size=50),
+        name=st.text(min_size=5, max_size=50),
+        industry=st.text(min_size=5, max_size=50),
+        target_market=st.text(min_size=20, max_size=100), # Should be longer for better quality
         business_model=st.sampled_from(list(BusinessModel)),
         company_size=st.sampled_from(list(CompanySize)),
-        description=st.text(min_size=0, max_size=100)
+        description=st.text(min_size=10, max_size=100)
     )
 
 def feature_description_strategy():
     return st.builds(
         FeatureDescription,
-        name=st.text(min_size=1, max_size=50),
-        description=st.text(min_size=1, max_size=200),
-        value_proposition=st.text(min_size=1, max_size=50),
-        target_user=st.text(min_size=1, max_size=50),
-        pricing_model=st.text(min_size=1, max_size=50),
+        name=st.text(min_size=5, max_size=50),
+        description=st.text(min_size=30, max_size=200),
+        value_proposition=st.text(min_size=20, max_size=100),
+        target_user=st.text(min_size=5, max_size=50),
+        pricing_model=st.text(min_size=5, max_size=50),
         implementation_complexity=st.sampled_from(list(ImplementationComplexity)),
         competitor_comparison=st.text(min_size=0, max_size=50)
     )
 
 class TestPropertyExperimentManagement:
     
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(company_input=company_input_strategy(), feature_description=feature_description_strategy())
     def test_experiment_persistence(self, client, company_input, feature_description):
         """Property 27: Experiment persistence capability"""
@@ -81,7 +81,7 @@ class TestPropertyExperimentManagement:
             assert len(retrieved_data["experiment"]["personas"]) == 1
             assert retrieved_data["experiment"]["personas"][0]["name"] == "Test Persona"
 
-    @settings(max_examples=10, deadline=None)
+    @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(company_input=company_input_strategy(), 
            feature_1=feature_description_strategy(), 
            feature_2=feature_description_strategy())
