@@ -119,6 +119,14 @@ class Recommendations(BaseModel):
     target_segments: List[str] = Field(..., min_length=0, max_length=10)
     feature_improvements: List[str] = Field(..., min_length=0, max_length=10)
 
+class ReasoningPattern(BaseModel):
+    """Represents a pattern found in persona reasoning"""
+    pattern_type: Literal["theme", "objection_cluster", "success_driver"]
+    description: str = Field(..., min_length=1, max_length=500)
+    frequency: int = Field(..., ge=1)
+    example_quotes: List[str] = Field(..., min_length=1, max_length=5)
+    affected_personas: List[str] = Field(..., min_length=1)
+
 class AggregatedInsights(BaseModel):
     overall_adoption_rate: float = Field(..., ge=0.0, le=1.0)
     confidence_interval: tuple[float, float]
@@ -126,6 +134,7 @@ class AggregatedInsights(BaseModel):
     top_objections: List[ObjectionCluster]
     key_success_factors: List[SuccessFactor]
     recommendations: Recommendations
+    reasoning_patterns: Optional[List[ReasoningPattern]] = None
 
 class Experiment(BaseModel):
     id: str = Field(..., min_length=1)

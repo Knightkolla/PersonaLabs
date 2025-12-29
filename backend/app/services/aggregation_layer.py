@@ -1,10 +1,14 @@
 from app.models import SimulationResponse, AggregatedInsights, ObjectionCluster, SuccessFactor, Recommendations, SimulationDecision
+from app.services.pattern_analyzer import PatternAnalyzer
 from typing import List, Dict
 import statistics
 from collections import Counter
 
 class AggregationLayer:
     """Aggregates simulation results into insights and recommendations"""
+    
+    def __init__(self):
+        self.pattern_analyzer = PatternAnalyzer()
     
     def aggregate_results(self, simulation_results: List[SimulationResponse], personas: List['SyntheticPersona'] = None) -> AggregatedInsights:
         """
@@ -40,13 +44,17 @@ class AggregationLayer:
             simulation_results, adoption_rate, top_objections, key_success_factors
         )
         
+        # Analyze reasoning patterns
+        reasoning_patterns = self.pattern_analyzer.analyze_patterns(simulation_results)
+        
         return AggregatedInsights(
             overall_adoption_rate=adoption_rate,
             confidence_interval=confidence_interval,
             adoption_by_segment=adoption_by_segment,
             top_objections=top_objections,
             key_success_factors=key_success_factors,
-            recommendations=recommendations
+            recommendations=recommendations,
+            reasoning_patterns=reasoning_patterns
         )
     
     def _calculate_adoption_rate(self, results: List[SimulationResponse]) -> float:

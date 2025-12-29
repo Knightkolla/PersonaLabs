@@ -10,10 +10,11 @@ from app.services.company_processor import CompanyContextProcessor
 from app.services.persona_generator import PersonaGenerationEngine
 from app.services.simulation_engine import SimulationEngine
 from app.services.aggregation_layer import AggregationLayer
+from app.utils import generate_share_token
 import uuid
 import json
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 router = APIRouter(prefix="/experiments", tags=["experiments"])
 
@@ -272,5 +273,137 @@ async def fork_experiment(
             message="Experiment forked successfully. Ready for simulation."
         )
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{experiment_id}/share", response_model=Dict[str, str])
+async def share_experiment(experiment_id: str, db: Session = Depends(get_db)):
+    """Generate a shareable token for an experiment"""
+    try:
+        exp_db = db.query(ExperimentDB).filter(ExperimentDB.id == experiment_id).first()
+        
+        if not exp_db:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+        
+        # Generate new share token
+        share_token = generate_share_token()
+        
+        # Update experiment
+        exp_db.share_token = share_token
+        exp_db.is_public = True
+        exp_db.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return {
+            "share_token": share_token,
+            "share_url": f"/api/v1/experiments/shared/{share_token}",
+            "message": "Experiment shared successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/shared/{share_token}", response_model=ExperimentResponse)
+async def get_shared_experiment(share_token: str, db: Session = Depends(get_db)):
+    """Retrieve an experiment by its share token"""
+    try:
+        exp_db = db.query(ExperimentDB).filter(
+            ExperimentDB.share_token == share_token,
+            ExperimentDB.is_public == True
+        ).first()
+        
+        if not exp_db:
+            raise HTTPException(status_code=404, detail="Shared experiment not found or access revoked")
+        
+        # Deserialize experiment
+        experiment = Experiment(
+            id=exp_db.id,
+            user_id=exp_db.user_id,
+            created_at=exp_db.created_at,
+            updated_at=exp_db.updated_at,
+            company_context=_deserialize_model(exp_db.company_context, CompanyContext),
+            feature_description=_deserialize_model(exp_db.feature_description, FeatureDescription),
+            personas=_deserialize_list(exp_db.personas, SyntheticPersona),
+            simulation_results=_deserialize_list(exp_db.simulation_results, SimulationResponse),
+            aggregated_insights=_deserialize_model(exp_db.aggregated_insights, AggregatedInsights),
+            is_public=exp_db.is_public,
+            share_token=exp_db.share_token
+        )
+        
+        return ExperimentResponse(
+            experiment=experiment,
+            status="success",
+            message="Shared experiment retrieved successfully"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{experiment_id}/share")
+async def revoke_share(experiment_id: str, db: Session = Depends(get_db)):
+    """Revoke sharing access for an experiment"""
+    try:
+        exp_db = db.query(ExperimentDB).filter(ExperimentDB.id == experiment_id).first()
+        
+        if not exp_db:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+        
+        # Revoke sharing
+        exp_db.share_token = None
+        exp_db.is_public = False
+        exp_db.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return {"message": "Sharing access revoked successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{experiment_id}/export/csv")
+async def export_experiment_csv(experiment_id: str, db: Session = Depends(get_db)):
+    """Export experiment results as CSV"""
+    from fastapi.responses import Response
+    
+    try:
+        exp_db = db.query(ExperimentDB).filter(ExperimentDB.id == experiment_id).first()
+        
+        if not exp_db:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+        
+        # Deserialize experiment
+        experiment = Experiment(
+            id=exp_db.id,
+            user_id=exp_db.user_id,
+            created_at=exp_db.created_at,
+            updated_at=exp_db.updated_at,
+            company_context=_deserialize_model(exp_db.company_context, CompanyContext),
+            feature_description=_deserialize_model(exp_db.feature_description, FeatureDescription),
+            personas=_deserialize_list(exp_db.personas, SyntheticPersona),
+            simulation_results=_deserialize_list(exp_db.simulation_results, SimulationResponse),
+            aggregated_insights=_deserialize_model(exp_db.aggregated_insights, AggregatedInsights),
+            is_public=exp_db.is_public,
+            share_token=exp_db.share_token
+        )
+        
+        # Generate CSV
+        aggregation_layer = AggregationLayer()
+        csv_content = aggregation_layer.generate_csv_export(experiment)
+        
+        return Response(
+            content=csv_content,
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=experiment_{experiment_id}.csv"}
+        )
+        
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,4 @@
+# file: /Users/kartikeya/Documents/PersonaLab/backend/app/services/pattern_analyzer.py
+# hypothesis_version: 6.148.7
+
+[100, '.', '. ', '...', 'ADOPT', 'REJECT', 'affordable', 'budget', 'capacity', 'compatibility', 'complex', 'complexity', 'cost', 'current system', 'data protection', 'delay', 'difficult', 'easy', 'existing', 'expand', 'expensive', 'growth', 'integrate', 'integration', 'learning curve', 'objection_cluster', 'price', 'privacy', 'quick', 'risk', 'safe', 'scalability', 'scale', 'schedule', 'security', 'simple', 'slow', 'success_driver', 'theme', 'time']

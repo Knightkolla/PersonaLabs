@@ -1,0 +1,4 @@
+# file: /Users/kartikeya/Documents/PersonaLab/backend/app/models.py
+# hypothesis_version: 6.148.7
+
+[0.0, 1.0, 100, 200, 500, 1000, 'ADOPT', 'B2B', 'B2B2C', 'B2C', 'Early Adopter', 'Early Majority', 'Enterprise', 'High', 'Laggard', 'Late Majority', 'Low', 'Marketplace', 'Medium', 'Mid-Market', 'REJECT', 'SMB', 'Startup', 'UNSURE', 'objection_cluster', 'success_driver', 'theme']
