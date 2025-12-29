@@ -1,0 +1,89 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.4.1, pluggy-1.6.0
+rootdir: /Users/kartikeya/Documents/PersonaLab/backend
+configfile: pytest.ini
+plugins: asyncio-1.1.0, hypothesis-6.148.7, langsmith-0.4.14, anyio-4.2.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items / 2 deselected / 1 selected
+
+backend/tests/test_property_aggregation_layer.py F                       [100%]
+
+=================================== FAILURES ===================================
+__________ TestPropertyAggregationLayer.test_aggregation_calculation ___________
+
+self = <tests.test_property_aggregation_layer.TestPropertyAggregationLayer object at 0x10a1dd2b0>
+
+    @given(st.lists(simulation_response_strategy(), min_size=1, max_size=50))
+>   def test_aggregation_calculation(self, results):
+               ^^^^^^^
+
+backend/tests/test_property_aggregation_layer.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/tests/test_property_aggregation_layer.py:75: in test_aggregation_calculation
+    insights = aggregator.aggregate_results(results)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/services/aggregation_layer.py:36: in aggregate_results
+    key_success_factors = self._identify_success_factors(simulation_results)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.services.aggregation_layer.AggregationLayer object at 0x10ac66ae0>
+results = [SimulationResponse(persona_id='e3e70682-c209-4cac-629f-6fbed82c07cd', decision=<SimulationDecision.ADOPT: 'ADOPT'>, c...g='0', key_factors=['0', '0'], timestamp=datetime.datetime(2025, 12, 29, 17, 35, 59, 584106), model_used='test-model')]
+
+    def _identify_success_factors(self, results: List[SimulationResponse]) -> List[SuccessFactor]:
+        """Identify key factors that drive adoption"""
+        adoptions = [r for r in results if r.decision == SimulationDecision.ADOPT]
+    
+        if not adoptions:
+            return []
+    
+        # Count key factors mentioned in adoptions
+        factor_counts = Counter()
+        factor_personas = {}
+    
+        for adoption in adoptions:
+            cleaned_factors = [f.lower().strip() for f in adoption.key_factors]
+            for factor in cleaned_factors:
+                factor_counts[factor] += 1
+                if factor not in factor_personas:
+                    factor_personas[factor] = []
+                factor_personas[factor].append(adoption.persona_id)
+    
+        # Convert to SuccessFactor objects
+        success_factors = []
+        total_adoptions = len(adoptions)
+    
+        for factor, count in factor_counts.most_common(5):
+            importance = count / total_adoptions
+>           success_factor = SuccessFactor(
+                factor=factor.title(),
+                importance=importance,
+                supporting_personas=factor_personas[factor]
+            )
+E           pydantic_core._pydantic_core.ValidationError: 1 validation error for SuccessFactor
+E           importance
+E             Input should be less than or equal to 1 [type=less_than_equal, input_value=2.0, input_type=float]
+E               For further information visit https://errors.pydantic.dev/2.10/v/less_than_equal
+E           Falsifying example: test_aggregation_calculation(
+E               self=<tests.test_property_aggregation_layer.TestPropertyAggregationLayer object at 0x10a1dd2b0>,
+E               results=[SimulationResponse(
+E                    persona_id='e3e70682-c209-4cac-629f-6fbed82c07cd',
+E                    decision=<SimulationDecision.ADOPT: 'ADOPT'>,
+E                    confidence=0.0,
+E                    reasoning='0',
+E                    key_factors=['0', '0'],
+E                    timestamp=datetime.datetime(2025, 12, 29, 17, 35, 59, 584106),
+E                    model_used='test-model',
+E                )],
+E           )
+
+backend/app/services/aggregation_layer.py:240: ValidationError
+=============================== warnings summary ===============================
+backend/tests/test_property_aggregation_layer.py:28
+  /Users/kartikeya/Documents/PersonaLab/backend/tests/test_property_aggregation_layer.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=st.just(datetime.utcnow()),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_property_aggregation_layer.py::TestPropertyAggregationLayer::test_aggregation_calculation
+================== 1 failed, 2 deselected, 1 warning in 0.25s ==================

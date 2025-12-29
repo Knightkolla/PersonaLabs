@@ -1,0 +1,4 @@
+# file: /Users/kartikeya/Documents/Perosna Labs/backend/app/services/company_processor.py
+# hypothesis_version: 6.148.7
+
+['B2B', 'B2C', 'CEO/Founder', 'Early Adopter', 'Enterprise', 'Finance Manager', 'Freelancer', 'IT Director', 'Mainstream User', 'Mid-Market', 'Operations Manager', 'Product Manager', 'SMB', 'Sales Director', 'Senior Executive', 'Small Business Owner', 'Startup', 'Student', 'Technical Lead', 'adoption_patterns', 'base_role', 'business_model', 'company_context', 'seed_id']
